@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Legacy dotted bg used on onboarding */
+  .hospital-bg {
+    background-color: #f8fafc;
+    background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Change 6: Premium soft blue-to-white vertical gradient */
+  .app-bg {
+    background: linear-gradient(180deg, #eef2ff 0%, #f0f4ff 30%, #f8fafc 60%, #ffffff 100%);
+    min-height: 100vh;
+  }
+
+  /* Change 6: Chat background — subtle blue radial glow at top */
+  .chat-bg {
+    background-color: #f1f5f9;
+    background-image: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
+  }
+
+  /* Health score glowing circle */
+  .health-score-glow {
+    filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.3));
+  }
+
+  /* Floating particles inside feature cards */
+  .floating-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Pulse animation for "New Chat" CTA */
+  .pulse-attention {
+    animation: subtlePulse 2.8s ease-in-out infinite;
+  }
+
+  /* Change 4: Card shine sweep — light streak across card */
+  .card-shine {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.15) 50%,
+      transparent 100%
+    );
+    animation: cardShine 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* ── Keyframes ── */
+
+/* Change 4: Card shine sweep */
+@keyframes cardShine {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  60% { transform: translateX(300%) rotate(25deg); }
+  100% { transform: translateX(300%) rotate(25deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+  50% { transform: translateY(-18px) translateX(8px); opacity: 0.65; }
+}
+
+@keyframes subtlePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25); }
+  50% { transform: scale(1.03); box-shadow: 0 6px 25px rgba(37, 99, 235, 0.4); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+/* Base */
+body {
+  @apply text-slate-900 bg-slate-50 font-sans antialiased;
+}
+
+/* Change 2: Global heading contrast */
+h1, h2, h3, h4, h5, h6 {
+  @apply text-slate-900;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  @apply font-bold tracking-tight mt-6 mb-4 text-slate-900;
+}
+
+.markdown-body h1 { @apply text-2xl; }
+.markdown-body h2 { @apply text-xl; }
+.markdown-body h3 { @apply text-lg; }
+
+.markdown-body p {
+  @apply mb-4 leading-relaxed text-slate-700;
+}
+
+.markdown-body ul {
+  @apply list-disc pl-6 mb-4;
+}
+
+.markdown-body ol {
+  @apply list-decimal pl-6 mb-4;
+}
+
+.markdown-body blockquote {
+  @apply border-l-4 border-blue-200 bg-blue-50 italic pl-4 py-2 mb-4 rounded-r-lg;
+}
+
+.markdown-body table {
+  @apply w-full mb-4 border-collapse overflow-hidden rounded-lg;
+}
+
+.markdown-body th {
+  @apply bg-slate-100 p-2 text-left font-semibold border-b text-slate-900;
+}
+
+.markdown-body td {
+  @apply p-2 border-b text-slate-700;
+}
+
+.markdown-body strong {
+  @apply font-bold text-slate-900;
+}
+
+/* Change 2: Section headers throughout app */
+.section-header {
+  @apply text-slate-900 font-bold;
+}
