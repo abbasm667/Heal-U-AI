@@ -25,7 +25,7 @@ const MedicalLibrary: React.FC<MedicalLibraryProps> = ({ userId }) => {
     );
     const unsub = onSnapshot(q, (snap) => {
       setDocs(snap.docs
-        .map((d) => ({ id: d.id, ...d.data() }))
+        .map((d) => ({ id: d.id, ...d.data() } as any))
         .filter((r) => r.type === 'medical_document'));
       setLoading(false);
     });

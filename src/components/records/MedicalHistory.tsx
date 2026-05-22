@@ -88,7 +88,7 @@ const MedicalHistory: React.FC<MedicalHistoryProps> = ({ userId }) => {
       orderBy('createdAt', 'desc')
     );
     const unsub = onSnapshot(q, (snap) => {
-      const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const all = snap.docs.map((d) => ({ id: d.id, ...d.data() } as any));
       // Show confirmed / non-pending / non-document records
       setRecords(all.filter((r) => r.status !== 'pending_confirmation' && r.type !== 'medical_document'));
       setLoading(false);

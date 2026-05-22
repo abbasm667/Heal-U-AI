@@ -1,9 +1,23 @@
 import { GoogleGenAI } from '@google/genai';
+import { isWeb } from '../../lib/environment';
+import { API_BASE } from '../../lib/api';
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
 export async function searchMedicine(medicine: string) {
   try {
+    if (isWeb()) {
+      const response = await fetch(`${API_BASE}/api/pharmacy/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ medicine }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to communicate with pharmacy backend');
+      }
+      return await response.json();
+    }
+
     const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
     // Use just first 2 words for a cleaner search (e.g. "Buscopan" not "Buscopan Plus Tablets 10mg/500mg")

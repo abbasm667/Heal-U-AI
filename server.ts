@@ -12,7 +12,9 @@ import healthReportRoutes from './src/routes/health-report.js';
 
 dotenv.config();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = typeof __filename !== 'undefined'
+  ? path.dirname(__filename)
+  : path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 const isProd = process.env.NODE_ENV === 'production';

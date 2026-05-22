@@ -1,9 +1,23 @@
 import { GoogleGenAI } from '@google/genai';
+import { isWeb } from '../../lib/environment';
+import { API_BASE } from '../../lib/api';
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
 export async function searchDoctors(city: string, speciality: string) {
   try {
+    if (isWeb()) {
+      const response = await fetch(`${API_BASE}/api/doctors/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, speciality }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to communicate with doctors backend');
+      }
+      return await response.json();
+    }
+
     const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
     
     const searchPrompt = `Search oladoc.com for ${speciality} doctors in ${city} Pakistan. Find 3 to 5 real doctors. For each doctor, give me their full name, speciality, qualification, hospital, experience, fee, and most importantly their REAL profile page URL that you found from oladoc.com. Do not construct or guess any URL. Only return URLs that you actually found from search results. Return ONLY a valid JSON array with no markdown backticks: [{"name":"Dr. Full Name","speciality":"...","qualification":"...","hospital":"...","experience":"...","fee":2000,"oladocUrl":"the real URL you found"}]`;

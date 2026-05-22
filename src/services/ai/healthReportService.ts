@@ -1,4 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
+import { isWeb } from '../../lib/environment';
+import { API_BASE } from '../../lib/api';
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
@@ -29,6 +31,18 @@ export async function generateHealthReport(params: {
   chatSummaries?: string[];
   period?: string;
 }) {
+  if (isWeb()) {
+    const response = await fetch(`${API_BASE}/api/health-report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to communicate with health report backend');
+    }
+    return await response.json();
+  }
+
   const { userData, medicalRecords, documents, chatSummaries, period } = params;
 
   const hasRecords = Array.isArray(medicalRecords) && medicalRecords.length > 0;

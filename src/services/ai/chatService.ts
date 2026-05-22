@@ -1,4 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
+import { isWeb } from '../../lib/environment';
+import { API_BASE } from '../../lib/api';
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
@@ -88,6 +90,19 @@ export async function sendMessage(params: {
   } = params;
 
   try {
+    if (isWeb()) {
+      const response = await fetch(`${API_BASE}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to communicate with chat backend');
+      }
+      return await response.json();
+    }
+
     const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
     // ── Build context prompt ─────────────────────────────────────────────────
