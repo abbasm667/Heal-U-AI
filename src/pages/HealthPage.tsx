@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Activity, CalendarDays, ChevronRight, Clock } from 'lucide-react';
 import HealthReportView from '../components/health/HealthReportView.js';
 import { API_BASE } from '../lib/api.js';
+import { useDesktopLayout } from '../lib/environment.js';
 
 interface HealthPageProps {
   userId: string;
@@ -57,6 +58,7 @@ const HealthPage: React.FC<HealthPageProps> = ({ userId, userProfile }) => {
   const [pastReports, setPastReports] = useState<any[]>([]);
   const [error, setError] = useState('');
   const [showPastReports, setShowPastReports] = useState(false);
+  const isDesktop = useDesktopLayout();
 
   // Load past reports
   useEffect(() => {
@@ -158,7 +160,7 @@ const HealthPage: React.FC<HealthPageProps> = ({ userId, userProfile }) => {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-lg mx-auto px-4 pt-6 pb-12 space-y-6">
+      <div className={isDesktop ? "max-w-2xl mx-auto px-8 py-8 space-y-6" : "max-w-lg mx-auto px-4 pt-6 pb-12 space-y-6"}>
 
         {/* Header */}
         <div className="flex flex-col items-center text-center">

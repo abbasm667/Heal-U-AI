@@ -7,6 +7,7 @@ import MedicalHistory from '../components/records/MedicalHistory.js';
 import MedicalLibrary from '../components/records/MedicalLibrary.js';
 import ConfirmationFAB from '../components/records/ConfirmationFAB.js';
 import ConfirmationPanel from '../components/records/ConfirmationPanel.js';
+import { useDesktopLayout } from '../lib/environment.js';
 
 interface RecordsPageProps {
   userId: string;
@@ -18,6 +19,7 @@ const RecordsPage: React.FC<RecordsPageProps> = ({ userId }) => {
   const [activeSection, setActiveSection] = useState<Section>('history');
   const [panelOpen, setPanelOpen] = useState(false);
   const [pendingRecords, setPendingRecords] = useState<any[]>([]);
+  const isDesktop = useDesktopLayout();
 
   // Live pending count for badge
   useEffect(() => {
@@ -33,7 +35,7 @@ const RecordsPage: React.FC<RecordsPageProps> = ({ userId }) => {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-lg mx-auto px-4 pt-6 pb-8">
+      <div className={isDesktop ? "max-w-6xl mx-auto px-8 pt-6 pb-8" : "max-w-lg mx-auto px-4 pt-6 pb-8"}>
 
         {/* Premium gradient header behind title */}
         <div className="relative overflow-hidden bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100/60 py-5 -mx-4 -mt-6 px-4 mb-6">
@@ -47,66 +49,75 @@ const RecordsPage: React.FC<RecordsPageProps> = ({ userId }) => {
           <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-indigo-100/30 to-transparent pointer-events-none" />
         </div>
 
-        {/* iOS-style Segmented Switcher */}
-        <div className="bg-slate-100 p-1 rounded-2xl flex relative mb-6 shadow-inner">
-          <motion.div
-            className="absolute top-1 bottom-1 bg-white rounded-xl shadow-sm border border-slate-200/60"
-            style={{
-              width: 'calc(50% - 4px)',
-            }}
-            animate={{
-              left: activeSection === 'history' ? '4px' : 'calc(50%)',
-            }}
-            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-          />
-          <button
-            onClick={() => setActiveSection('history')}
-            className={`flex-1 py-3 flex items-center justify-center gap-2 text-xs font-bold rounded-xl relative z-10 transition-colors ${
-              activeSection === 'history' ? 'text-blue-600' : 'text-slate-500'
-            }`}
-          >
-            <ClipboardList className="w-4 h-4" />
-            Medical History
-          </button>
-          <button
-            onClick={() => setActiveSection('library')}
-            className={`flex-1 py-3 flex items-center justify-center gap-2 text-xs font-bold rounded-xl relative z-10 transition-colors ${
-              activeSection === 'library' ? 'text-blue-600' : 'text-slate-500'
-            }`}
-          >
-            <Library className="w-4 h-4" />
-            Medical Library
-          </button>
-        </div>
+        {isDesktop ? (
+          <div className="grid grid-cols-2 gap-8 items-start">
+            <MedicalHistory userId={userId} />
+            <MedicalLibrary userId={userId} />
+          </div>
+        ) : (
+          <>
+            {/* iOS-style Segmented Switcher */}
+            <div className="bg-slate-100 p-1 rounded-2xl flex relative mb-6 shadow-inner">
+              <motion.div
+                className="absolute top-1 bottom-1 bg-white rounded-xl shadow-sm border border-slate-200/60"
+                style={{
+                  width: 'calc(50% - 4px)',
+                }}
+                animate={{
+                  left: activeSection === 'history' ? '4px' : 'calc(50%)',
+                }}
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+              />
+              <button
+                onClick={() => setActiveSection('history')}
+                className={`flex-1 py-3 flex items-center justify-center gap-2 text-xs font-bold rounded-xl relative z-10 transition-colors ${
+                  activeSection === 'history' ? 'text-blue-600' : 'text-slate-500'
+                }`}
+              >
+                <ClipboardList className="w-4 h-4" />
+                Medical History
+              </button>
+              <button
+                onClick={() => setActiveSection('library')}
+                className={`flex-1 py-3 flex items-center justify-center gap-2 text-xs font-bold rounded-xl relative z-10 transition-colors ${
+                  activeSection === 'library' ? 'text-blue-600' : 'text-slate-500'
+                }`}
+              >
+                <Library className="w-4 h-4" />
+                Medical Library
+              </button>
+            </div>
 
-        {/* Section Content */}
-        <AnimatePresence mode="wait">
-          {activeSection === 'history' ? (
-            <motion.div
-              key="history"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <MedicalHistory userId={userId} />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="library"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <MedicalLibrary userId={userId} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {/* Section Content */}
+            <AnimatePresence mode="wait">
+              {activeSection === 'history' ? (
+                <motion.div
+                  key="history"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <MedicalHistory userId={userId} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="library"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <MedicalLibrary userId={userId} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
       </div>
 
-      {/* Confirmation FAB (only visible in History section) */}
-      {activeSection === 'history' && (
+      {/* Confirmation FAB (only visible in History section on mobile, or always on desktop) */}
+      {(isDesktop || activeSection === 'history') && (
         <ConfirmationFAB
           pendingCount={pendingRecords.length}
           onClick={() => setPanelOpen(true)}

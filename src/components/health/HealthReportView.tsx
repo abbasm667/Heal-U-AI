@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { AlertTriangle, AlertCircle, CheckCircle, Lightbulb, Info } from 'lucide-react';
+import { useDesktopLayout } from '../../lib/environment.js';
 
 interface HealthReportData {
   healthScore: number;
@@ -17,7 +18,11 @@ interface HealthReportViewProps {
 
 // Animated SVG Circular Gauge with glow
 const ScoreGauge: React.FC<{ score: number }> = ({ score }) => {
-  const radius = 60;
+  const isDesktop = useDesktopLayout();
+  const radius = isDesktop ? 120 : 60;
+  const strokeWidth = isDesktop ? 24 : 12;
+  const size = isDesktop ? 280 : 144;
+  const center = size / 2;
   const circumference = 2 * Math.PI * radius;
   const clampedScore = Math.min(100, Math.max(0, score));
   const strokeDashoffset = circumference - (clampedScore / 100) * circumference;
@@ -33,18 +38,18 @@ const ScoreGauge: React.FC<{ score: number }> = ({ score }) => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-36 h-36 health-score-glow">
-        <svg width="144" height="144" viewBox="0 0 144 144" className="-rotate-90">
+      <div className="relative health-score-glow" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
           {/* Background track */}
-          <circle cx="72" cy="72" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="12" />
+          <circle cx={center} cy={center} r={radius} fill="none" stroke="#e2e8f0" strokeWidth={strokeWidth} />
           {/* Animated score arc */}
           <motion.circle
-            cx="72"
-            cy="72"
+            cx={center}
+            cy={center}
             r={radius}
             fill="none"
             stroke={color}
-            strokeWidth="12"
+            strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={circumference}
             initial={{ strokeDashoffset: circumference }}
@@ -58,12 +63,12 @@ const ScoreGauge: React.FC<{ score: number }> = ({ score }) => {
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
-            className="text-3xl font-black"
+            className={isDesktop ? "text-6xl font-black" : "text-3xl font-black"}
             style={{ color }}
           >
             {clampedScore}
           </motion.span>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">/ 100</span>
+          <span className={`${isDesktop ? 'text-xs' : 'text-[10px]'} font-bold text-slate-400 uppercase tracking-widest`}>/ 100</span>
         </div>
       </div>
       <p className="text-sm font-bold mt-2" style={{ color }}>

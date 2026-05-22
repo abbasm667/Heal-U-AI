@@ -10,6 +10,7 @@ import {
   ExternalLink, XCircle, ChevronDown, ChevronUp, MapPin, Activity
 } from 'lucide-react';
 import BookingSimulationOverlay from '../components/agents/BookingSimulationOverlay.js';
+import { useDesktopLayout } from '../lib/environment.js';
 
 interface FollowUpsPageProps {
   userId: string;
@@ -24,6 +25,7 @@ const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ userId }) => {
   const [completedRecords, setCompletedRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
+  const isDesktop = useDesktopLayout();
 
   // New Simulation state
   const [activeBooking, setActiveBooking] = useState<{ type: 'doctor_visit' | 'medicine_order'; data: any } | null>(null);
@@ -152,7 +154,7 @@ const FollowUpsPage: React.FC<FollowUpsPageProps> = ({ userId }) => {
 
   return (
     <div className="h-full overflow-y-auto bg-slate-50/50">
-      <div className="max-w-xl mx-auto px-5 pt-8 pb-16 space-y-8">
+      <div className={isDesktop ? "max-w-4xl mx-auto px-8 py-6 space-y-8" : "max-w-xl mx-auto px-5 pt-8 pb-16 space-y-8"}>
 
         {/* Premium Page Header */}
         <motion.div

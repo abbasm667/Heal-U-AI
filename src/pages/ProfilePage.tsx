@@ -4,6 +4,7 @@ import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase.js';
 import { motion } from 'motion/react';
 import { Save, LogOut, User, Stethoscope, MapPin, Phone } from 'lucide-react';
+import { useDesktopLayout } from '../lib/environment.js';
 
 interface ProfilePageProps {
   userId: string;
@@ -54,6 +55,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId, userProfile, setUserP
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const isDesktop = useDesktopLayout();
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -101,6 +103,36 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId, userProfile, setUserP
 
   const getInitial = (name?: string) => (name ? name.charAt(0).toUpperCase() : 'U');
 
+  const saveButton = (
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={handleSave}
+      disabled={saving}
+      className={`w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm ${
+        saved
+          ? 'bg-emerald-600 text-white shadow-emerald-200'
+          : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200'
+      } disabled:opacity-60`}
+    >
+      {saving ? (
+        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+      ) : saved ? (
+        <><span>✓</span> Profile Saved!</>
+      ) : (
+        <><Save className="w-4 h-4" /> Save Profile</>
+      )}
+    </motion.button>
+  );
+
+  const signOutButton = (
+    <button
+      onClick={() => signOut(auth)}
+      className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 border border-red-100 transition-all"
+    >
+      <LogOut className="w-4 h-4" /> Sign Out
+    </button>
+  );
+
   return (
     <div className="h-full overflow-y-auto">
       {/* Instagram-style gradient header banner */}
@@ -110,7 +142,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId, userProfile, setUserP
         <div className="absolute -left-4 -bottom-4 w-28 h-28 bg-white/10 rounded-full blur-xl" />
       </div>
 
-      <div className="max-w-lg mx-auto px-4 pb-12">
+      <div className={isDesktop ? "max-w-6xl mx-auto px-8 pb-12" : "max-w-lg mx-auto px-4 pb-12"}>
         {/* Avatar overlapping banner */}
         <div className="flex flex-col items-center -mt-12 mb-6">
           <motion.div
@@ -145,120 +177,112 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId, userProfile, setUserP
           <p className="text-sm text-slate-500">{auth.currentUser?.email}</p>
         </div>
 
-        {/* Basic Info */}
-        <section className="bg-white rounded-3xl border border-slate-100 p-5 mb-4 shadow-lg shadow-slate-100/80 space-y-4">
-          <div className="flex items-center gap-2 mb-1">
-            <User className="w-4 h-4 text-blue-600" />
-            <h2 className="text-sm font-bold text-slate-900">Basic Information</h2>
-          </div>
-          <Field label="Full Name">
-            <Input value={form.displayName} onChange={set('displayName')} placeholder="Your full name" />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Age">
-              <Input type="number" value={form.age} onChange={set('age')} placeholder="Age" min={1} max={120} />
-            </Field>
-            <Field label="Gender">
-              <select
-                value={form.gender}
-                onChange={set('gender')}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-              >
-                <option value="">Select</option>
-                {GENDERS.map((g) => <option key={g} value={g}>{g}</option>)}
-              </select>
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="City">
-              <div className="relative">
-                <MapPin className="w-4 h-4 text-slate-300 absolute left-3 top-1/2 -translate-y-1/2" />
-                <Input value={form.city} onChange={set('city')} placeholder="Your city" className="pl-9" />
+        <div className={isDesktop ? "grid grid-cols-2 gap-8 items-start" : "space-y-4"}>
+          <div className="space-y-4">
+            {/* Basic Info */}
+            <section className="bg-white rounded-3xl border border-slate-100 p-5 shadow-lg shadow-slate-100/80 space-y-4">
+              <div className="flex items-center gap-2 mb-1">
+                <User className="w-4 h-4 text-blue-600" />
+                <h2 className="text-sm font-bold text-slate-900">Basic Information</h2>
               </div>
-            </Field>
-            <Field label="Phone Number">
-              <div className="relative">
-                <Phone className="w-4 h-4 text-slate-300 absolute left-3 top-1/2 -translate-y-1/2" />
-                <Input type="tel" value={form.phoneNumber} onChange={set('phoneNumber')} placeholder="+92..." className="pl-9" />
+              <Field label="Full Name">
+                <Input value={form.displayName} onChange={set('displayName')} placeholder="Your full name" />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Age">
+                  <Input type="number" value={form.age} onChange={set('age')} placeholder="Age" min={1} max={120} />
+                </Field>
+                <Field label="Gender">
+                  <select
+                    value={form.gender}
+                    onChange={set('gender')}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  >
+                    <option value="">Select</option>
+                    {GENDERS.map((g) => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </Field>
               </div>
-            </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="City">
+                  <div className="relative">
+                    <MapPin className="w-4 h-4 text-slate-300 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input value={form.city} onChange={set('city')} placeholder="Your city" className="pl-9" />
+                  </div>
+                </Field>
+                <Field label="Phone Number">
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-slate-300 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input type="tel" value={form.phoneNumber} onChange={set('phoneNumber')} placeholder="+92..." className="pl-9" />
+                  </div>
+                </Field>
+              </div>
+            </section>
+
+            {isDesktop && (
+              <div className="space-y-3 pt-2">
+                {saveButton}
+                {signOutButton}
+              </div>
+            )}
           </div>
-        </section>
 
-        {/* Medical Info */}
-        <section className="bg-white rounded-3xl border border-slate-100 p-5 mb-6 shadow-lg shadow-slate-100/80 space-y-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Stethoscope className="w-4 h-4 text-blue-600" />
-            <h2 className="text-sm font-bold text-slate-900">Medical Profile</h2>
+          <div className="space-y-4">
+            {/* Medical Info */}
+            <section className="bg-white rounded-3xl border border-slate-100 p-5 shadow-lg shadow-slate-100/80 space-y-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Stethoscope className="w-4 h-4 text-blue-600" />
+                <h2 className="text-sm font-bold text-slate-900">Medical Profile</h2>
+              </div>
+              <Field label="Blood Group">
+                <div className="flex flex-wrap gap-2">
+                  {BLOOD_GROUPS.map((bg) => (
+                    <button
+                      key={bg}
+                      type="button"
+                      onClick={() => { setForm((p) => ({ ...p, bloodGroup: bg })); setSaved(false); }}
+                      className={`px-3 py-1.5 rounded-xl text-sm font-bold border-2 transition-all active:scale-95 ${
+                        form.bloodGroup === bg
+                          ? 'bg-red-500 border-red-500 text-white shadow-sm shadow-red-200'
+                          : 'bg-white border-slate-200 text-slate-600 hover:border-red-200'
+                      }`}
+                    >
+                      {bg}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Field label="Chronic Diseases (comma-separated)">
+                <Input value={form.chronicDiseases} onChange={set('chronicDiseases')} placeholder="e.g. Diabetes, Hypertension" />
+              </Field>
+              <Field label="Allergies">
+                <Input value={form.allergies} onChange={set('allergies')} placeholder="e.g. Penicillin, Shellfish" />
+              </Field>
+              <Field label="Current Medications">
+                <Input value={form.currentMedications} onChange={set('currentMedications')} placeholder="e.g. Metformin 500mg" />
+              </Field>
+              <Field label="Previous Surgeries">
+                <Input value={form.previousSurgeries} onChange={set('previousSurgeries')} placeholder="e.g. Appendectomy 2019" />
+              </Field>
+              <Field label="Family Medical History">
+                <textarea
+                  value={form.familyHistory}
+                  onChange={set('familyHistory')}
+                  rows={3}
+                  placeholder="e.g. Father has diabetes, mother has hypertension..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+                />
+              </Field>
+            </section>
+
+            {!isDesktop && (
+              <div className="space-y-3 pt-2">
+                {saveButton}
+                {signOutButton}
+              </div>
+            )}
           </div>
-          <Field label="Blood Group">
-            <div className="flex flex-wrap gap-2">
-              {BLOOD_GROUPS.map((bg) => (
-                <button
-                  key={bg}
-                  type="button"
-                  onClick={() => { setForm((p) => ({ ...p, bloodGroup: bg })); setSaved(false); }}
-                  className={`px-3 py-1.5 rounded-xl text-sm font-bold border-2 transition-all active:scale-95 ${
-                    form.bloodGroup === bg
-                      ? 'bg-red-500 border-red-500 text-white shadow-sm shadow-red-200'
-                      : 'bg-white border-slate-200 text-slate-600 hover:border-red-200'
-                  }`}
-                >
-                  {bg}
-                </button>
-              ))}
-            </div>
-          </Field>
-          <Field label="Chronic Diseases (comma-separated)">
-            <Input value={form.chronicDiseases} onChange={set('chronicDiseases')} placeholder="e.g. Diabetes, Hypertension" />
-          </Field>
-          <Field label="Allergies">
-            <Input value={form.allergies} onChange={set('allergies')} placeholder="e.g. Penicillin, Shellfish" />
-          </Field>
-          <Field label="Current Medications">
-            <Input value={form.currentMedications} onChange={set('currentMedications')} placeholder="e.g. Metformin 500mg" />
-          </Field>
-          <Field label="Previous Surgeries">
-            <Input value={form.previousSurgeries} onChange={set('previousSurgeries')} placeholder="e.g. Appendectomy 2019" />
-          </Field>
-          <Field label="Family Medical History">
-            <textarea
-              value={form.familyHistory}
-              onChange={set('familyHistory')}
-              rows={3}
-              placeholder="e.g. Father has diabetes, mother has hypertension..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
-            />
-          </Field>
-        </section>
-
-        {/* Save Button */}
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={handleSave}
-          disabled={saving}
-          className={`w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm mb-3 ${
-            saved
-              ? 'bg-emerald-600 text-white shadow-emerald-200'
-              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200'
-          } disabled:opacity-60`}
-        >
-          {saving ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : saved ? (
-            <><span>✓</span> Profile Saved!</>
-          ) : (
-            <><Save className="w-4 h-4" /> Save Profile</>
-          )}
-        </motion.button>
-
-        {/* Sign Out */}
-        <button
-          onClick={() => signOut(auth)}
-          className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 border border-red-100 transition-all"
-        >
-          <LogOut className="w-4 h-4" /> Sign Out
-        </button>
+        </div>
       </div>
     </div>
   );

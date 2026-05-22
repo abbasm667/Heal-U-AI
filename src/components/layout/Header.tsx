@@ -18,19 +18,12 @@ interface AppHeaderProps {
 const AppHeader: React.FC<AppHeaderProps> = ({ userProfile, userId }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const isDesktop = useDesktopLayout();
+  const isMobile = !isDesktop;
   const desktopDropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const unreadCount = notifications.filter((n) => !n.read).length;
-
-  // Track viewport width
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, []);
 
   // Real-time notifications
   useEffect(() => {
