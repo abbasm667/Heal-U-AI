@@ -8,5 +8,5 @@
     "strict": true,
     "types": ["node", "express", "cors"]
   },
-  "include": ["vite.config.ts", "server.ts"]
+  "include": ["vite.config.ts", "server.ts", "src/routes/**/*.ts"]
 }
