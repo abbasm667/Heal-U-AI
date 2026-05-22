@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { WaveformCanvas, FolderCanvas, ECGCanvas, CalendarCanvas } from './CardAnimations.js';
+import { useDesktopLayout } from '../../lib/environment.js';
 
 interface FeatureCardProps {
   theme: 'blue' | 'emerald' | 'amber' | 'violet';
@@ -62,6 +63,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   theme, title, subtitle, icon, onClick, index, featured,
 }) => {
   const t = THEMES[theme];
+  const isDesktop = useDesktopLayout();
   return (
     <motion.button
       initial={{ opacity: 0, y: 20 }}
@@ -72,7 +74,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
       onClick={onClick}
       className="w-full text-left rounded-3xl overflow-hidden relative"
       style={{
-        minHeight: featured ? '190px' : '170px',
+        minHeight: isDesktop ? '200px' : (featured ? '190px' : '170px'),
         background: t.gradient,
         boxShadow: t.glow,
         transform: 'perspective(1000px) rotateX(2deg)',
@@ -122,7 +124,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
 
       <div className="flex h-full">
         {/* Left — Canvas animation panel (38% width), full height, no padding */}
-        <div className="relative flex-shrink-0 overflow-hidden" style={{ width: '38%' }}>
+        <div className="relative flex-shrink-0 overflow-hidden" style={{ width: isDesktop ? '45%' : '38%' }}>
           {/* Canvas fills the entire panel edge-to-edge */}
           <div className="absolute inset-0 opacity-90">
             <AnimationPanel variant={icon} />

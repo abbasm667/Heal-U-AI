@@ -7,6 +7,7 @@ import {
 import { db } from '../lib/firebase.js';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, MessageCircle, Trash2, Pencil, Check, X } from 'lucide-react';
+import { useDesktopLayout } from '../lib/environment.js';
 
 interface ConsultationListPageProps {
   userId: string;
@@ -80,9 +81,11 @@ const ConsultationListPage: React.FC<ConsultationListPageProps> = ({ userId }) =
     return d.toLocaleDateString('en-PK', { day: 'numeric', month: 'short' });
   };
 
+  const isDesktop = useDesktopLayout();
+
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-lg mx-auto px-4 pt-6 pb-8">
+      <div className={isDesktop ? "max-w-4xl mx-auto px-8 py-6" : "max-w-lg mx-auto px-4 pt-6 pb-8"}>
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -147,7 +150,7 @@ const ConsultationListPage: React.FC<ConsultationListPageProps> = ({ userId }) =
                   transition={{ delay: idx * 0.04 }}
                   onClick={() => renamingId !== chat.id && navigate(`/consultation/${chat.id}`)}
                   // Change 3: removed border-l-4 colored borders, clean white card
-                  className="bg-white rounded-2xl border border-slate-100 shadow-sm px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:shadow-md hover:border-slate-200 transition-all active:scale-[0.98] active:bg-slate-50"
+                  className={`bg-white rounded-2xl border border-slate-100 shadow-sm px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:border-slate-200 active:scale-[0.98] active:bg-slate-50 ${isDesktop ? 'hover:shadow-md hover:translate-y-[-1px] transition-all p-6' : 'hover:shadow-md transition-all'}`}
                 >
                   {/* Change 3: chat bubble icon in text-blue-500 */}
                   <div className="w-11 h-11 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">

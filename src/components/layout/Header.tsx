@@ -8,6 +8,7 @@ import {
   collection, query, orderBy, onSnapshot, updateDoc, doc, writeBatch,
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase.js';
+import { useDesktopLayout } from '../../lib/environment.js';
 
 interface AppHeaderProps {
   userProfile: any;
@@ -18,6 +19,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ userProfile, userId }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [notifOpen, setNotifOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isDesktop = useDesktopLayout();
   const desktopDropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -162,12 +164,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({ userProfile, userId }) => {
 
   return (
     <>
-      {/* ── App Header Bar — Dark Premium Mobile Style ────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between" style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
-      }}>
+      {/* ── App Header Bar ── */}
+      <header
+        className={isDesktop ? "fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-6 h-16" : "fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between"}
+        style={isDesktop ? undefined : {
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
+        }}
+      >
         <button
           onClick={() => navigate('/')}
           className="flex items-center gap-2.5 hover:opacity-90 transition-opacity active:scale-95"
@@ -178,7 +183,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ userProfile, userId }) => {
           }}>
             <Hospital className="text-white w-5 h-5" />
           </div>
-          <span className="text-lg font-bold text-white tracking-tight">Heal U</span>
+          <span className={isDesktop ? "text-xl font-bold text-slate-900 ml-1" : "text-lg font-bold text-white tracking-tight"}>Heal U</span>
         </button>
 
         <div className="flex items-center gap-2.5">
@@ -188,9 +193,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({ userProfile, userId }) => {
               id="notif-bell-btn"
               onClick={() => setNotifOpen((v) => !v)}
               className="relative w-10 h-10 flex items-center justify-center rounded-2xl transition-colors"
-              style={{ background: 'rgba(255,255,255,0.08)' }}
+              style={isDesktop ? { background: 'rgba(0,0,0,0.04)' } : { background: 'rgba(255,255,255,0.08)' }}
             >
-              <Bell className="w-5 h-5 text-slate-300" />
+              <Bell className={`w-5 h-5 ${isDesktop ? 'text-slate-600' : 'text-slate-300'}`} />
               {unreadCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}

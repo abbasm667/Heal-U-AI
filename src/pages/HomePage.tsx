@@ -5,6 +5,7 @@ import { db } from '../lib/firebase.js';
 import { motion } from 'motion/react';
 import { MessageCircle, ArrowRight, PlusCircle } from 'lucide-react';
 import FeatureCard from '../components/home/FeatureCard.js';
+import { useDesktopLayout } from '../lib/environment.js';
 
 interface HomePageProps {
   userId: string;
@@ -62,9 +63,11 @@ const HomePage: React.FC<HomePageProps> = ({ userId, userProfile }) => {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
+  const isDesktop = useDesktopLayout();
+
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-lg mx-auto px-4 pt-6 pb-8 space-y-8">
+      <div className={isDesktop ? "max-w-6xl mx-auto px-8 py-6 space-y-8" : "max-w-lg mx-auto px-4 pt-6 pb-8 space-y-8"}>
 
         {/* Greeting — Compact Dark Strip */}
         <motion.div
@@ -109,7 +112,7 @@ const HomePage: React.FC<HomePageProps> = ({ userId, userProfile }) => {
         </motion.div>
 
         {/* Feature Cards */}
-        <div className="space-y-4">
+        <div className={isDesktop ? "grid grid-cols-2 gap-6" : "space-y-4"}>
           <FeatureCard
             index={0}
             theme="blue"

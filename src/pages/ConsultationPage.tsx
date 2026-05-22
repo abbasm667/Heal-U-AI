@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
+import { useDesktopLayout } from '../lib/environment.js';
 
 import DoctorAnimation from '../components/chat/DoctorAnimation.js';
 import DoctorCards from '../components/agents/DoctorCards.js';
@@ -34,6 +35,7 @@ const SUGGESTION_CHIPS = [
 ];
 
 const ConsultationPage: React.FC<ConsultationPageProps> = ({ userProfile, userId }) => {
+  const isDesktop = useDesktopLayout();
   const { chatId } = useParams<{ chatId: string }>();
   const navigate = useNavigate();
 
@@ -526,126 +528,127 @@ const ConsultationPage: React.FC<ConsultationPageProps> = ({ userProfile, userId
 
       {/* Messages Area — only shown when there are messages */}
       {!isEmpty && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {messages.map((msg, idx) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'}`}
-            >
-              <div className={`p-4 shadow-sm ${
-                msg.role === 'user'
-                  ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm'
-                  : 'bg-white border border-slate-100 rounded-2xl rounded-bl-sm'
-              }`}>
-                {msg.role === 'ai' ? (
-                  <div className="markdown-body text-sm">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+        <div className={`flex-1 overflow-y-auto p-4 space-y-6 ${isDesktop ? 'pb-28' : ''}`}>
+          <div className={isDesktop ? "max-w-3xl mx-auto w-full space-y-6" : "space-y-6"}>
+            {messages.map((msg, idx) => (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'}`}
+              >
+                <div className={`p-4 shadow-sm ${
+                  msg.role === 'user'
+                    ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm'
+                    : 'bg-white border border-slate-100 rounded-2xl rounded-bl-sm'
+                }`}>
+                  {msg.role === 'ai' ? (
+                    <div className="markdown-body text-sm">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap text-white">{msg.content}</p>
+                  )}
+                </div>
+
+                {msg.role === 'ai' && msg.agenticAction && (
+                  <div className="mt-3 w-full flex flex-col gap-3">
+                    {msg.agenticAction.symptomPatternAlert && (
+                      <SymptomAlert pattern={msg.agenticAction.symptomPattern || 'Recurring symptoms detected.'} />
+                    )}
+                    {msg.agenticAction.detectEmergency && idx === messages.length - 1 && (
+                      <EmergencyOverlay
+                        active={true}
+                        userCity={userProfile?.city}
+                        medicalCase={msg.agenticAction.medicalCase}
+                        userId={userId}
+                      />
+                    )}
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {msg.agenticAction.consultDoctor && (
+                        <button
+                          onClick={() => setExpandedSections((prev) => ({ ...prev, [msg.id]: prev[msg.id] === 'doctors' ? null : 'doctors' }))}
+                          className={`px-4 py-2 border rounded-xl text-sm font-bold shadow-sm transition-all flex items-center gap-1.5 active:scale-95 ${expandedSections[msg.id] === 'doctors' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-blue-200 text-blue-600 hover:bg-blue-50'}`}
+                        >
+                          <Stethoscope className="w-4 h-4" /> Consult Specialist
+                        </button>
+                      )}
+                      {msg.agenticAction.orderMedicine && (
+                        <button
+                          onClick={() => setExpandedSections((prev) => ({ ...prev, [msg.id]: prev[msg.id] === 'medicine' ? null : 'medicine' }))}
+                          className={`px-4 py-2 border rounded-xl text-sm font-bold shadow-sm transition-all flex items-center gap-1.5 active:scale-95 ${expandedSections[msg.id] === 'medicine' ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50'}`}
+                        >
+                          <Pill className="w-4 h-4" /> Look For Medicine
+                        </button>
+                      )}
+                      {msg.agenticAction.detectEmergency && (
+                        <button
+                          onClick={() => {
+                            const triggerBtn = document.querySelector('.emergency-overlay-trigger-btn') as HTMLButtonElement;
+                            if (triggerBtn) triggerBtn.click();
+                            else alert('Ambulance dispatch workflow triggered. Cycling local emergency services...');
+                          }}
+                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold shadow-sm transition-all flex items-center gap-1.5 active:scale-95"
+                        >
+                          <Phone className="w-4 h-4" /> Call Ambulance
+                        </button>
+                      )}
+                    </div>
+                    {expandedSections[msg.id] === 'doctors' && msg.agenticAction.consultDoctor && (
+                      <DoctorCards speciality={msg.agenticAction.recommendedSpeciality} userCity={userProfile?.city} onLinkClick={(doctor, url) => handleExternalLink('doctor_visit', doctor, url)} />
+                    )}
+                    {expandedSections[msg.id] === 'medicine' && msg.agenticAction.orderMedicine && (
+                      <MedicineCards medicine={msg.agenticAction.recommendedMedicine || msg.agenticAction.medicalCase} onLinkClick={(medicine, url) => handleExternalLink('medicine_order', medicine, url)} />
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            ))}
+
+            {loading && <DoctorAnimation />}
+
+            {showStoragePrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-amber-50/70 border border-amber-200 rounded-[2rem] p-6 max-w-sm mx-auto shadow-sm flex flex-col gap-4 mt-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-amber-100/80 rounded-2xl">
+                    <FileText className="w-6 h-6 text-amber-600 animate-pulse" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-heading font-bold text-slate-900 text-base leading-tight">Save to Medical Records?</h4>
+                    <p className="text-[10px] font-bold text-amber-800 truncate mt-0.5">{selectedFileName}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">Would you like this document to be saved in your Medical Records for future reference and health tracking?</p>
+                {uploadingToStorage ? (
+                  <div className="flex flex-col items-center justify-center py-2">
+                    <div className="w-6 h-6 border-2 border-amber-600 border-t-transparent rounded-full animate-spin mb-2" />
+                    <p className="text-[10px] font-bold text-slate-500">Uploading file and saving report...</p>
                   </div>
                 ) : (
-                  <p className="text-sm whitespace-pre-wrap text-white">{msg.content}</p>
-                )}
-              </div>
-
-              {msg.role === 'ai' && msg.agenticAction && (
-                <div className="mt-3 w-full flex flex-col gap-3">
-                  {msg.agenticAction.symptomPatternAlert && (
-                    <SymptomAlert pattern={msg.agenticAction.symptomPattern || 'Recurring symptoms detected.'} />
-                  )}
-                  {msg.agenticAction.detectEmergency && idx === messages.length - 1 && (
-                    <EmergencyOverlay
-                      active={true}
-                      userCity={userProfile?.city}
-                      medicalCase={msg.agenticAction.medicalCase}
-                      userId={userId}
-                    />
-                  )}
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {msg.agenticAction.consultDoctor && (
-                      <button
-                        onClick={() => setExpandedSections((prev) => ({ ...prev, [msg.id]: prev[msg.id] === 'doctors' ? null : 'doctors' }))}
-                        className={`px-4 py-2 border rounded-xl text-sm font-bold shadow-sm transition-all flex items-center gap-1.5 active:scale-95 ${expandedSections[msg.id] === 'doctors' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-blue-200 text-blue-600 hover:bg-blue-50'}`}
-                      >
-                        <Stethoscope className="w-4 h-4" /> Consult Specialist
-                      </button>
-                    )}
-                    {msg.agenticAction.orderMedicine && (
-                      <button
-                        onClick={() => setExpandedSections((prev) => ({ ...prev, [msg.id]: prev[msg.id] === 'medicine' ? null : 'medicine' }))}
-                        className={`px-4 py-2 border rounded-xl text-sm font-bold shadow-sm transition-all flex items-center gap-1.5 active:scale-95 ${expandedSections[msg.id] === 'medicine' ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50'}`}
-                      >
-                        <Pill className="w-4 h-4" /> Look For Medicine
-                      </button>
-                    )}
-                    {msg.agenticAction.detectEmergency && (
-                      <button
-                        onClick={() => {
-                          const triggerBtn = document.querySelector('.emergency-overlay-trigger-btn') as HTMLButtonElement;
-                          if (triggerBtn) triggerBtn.click();
-                          else alert('Ambulance dispatch workflow triggered. Cycling local emergency services...');
-                        }}
-                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold shadow-sm transition-all flex items-center gap-1.5 active:scale-95"
-                      >
-                        <Phone className="w-4 h-4" /> Call Ambulance
-                      </button>
-                    )}
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={handleSaveDocument} className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-sm">
+                      <FolderClosed className="w-3.5 h-3.5" /> Yes, Save It
+                    </button>
+                    <button onClick={handleJustAnalyze} className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-sm hover:bg-slate-50">
+                      <Search className="w-3.5 h-3.5" /> Just Analyze
+                    </button>
                   </div>
-                  {expandedSections[msg.id] === 'doctors' && msg.agenticAction.consultDoctor && (
-                    <DoctorCards speciality={msg.agenticAction.recommendedSpeciality} userCity={userProfile?.city} onLinkClick={(doctor, url) => handleExternalLink('doctor_visit', doctor, url)} />
-                  )}
-                  {expandedSections[msg.id] === 'medicine' && msg.agenticAction.orderMedicine && (
-                    <MedicineCards medicine={msg.agenticAction.recommendedMedicine || msg.agenticAction.medicalCase} onLinkClick={(medicine, url) => handleExternalLink('medicine_order', medicine, url)} />
-                  )}
-                </div>
-              )}
-            </motion.div>
-          ))}
-
-          {loading && <DoctorAnimation />}
-
-          {showStoragePrompt && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-amber-50/70 border border-amber-200 rounded-[2rem] p-6 max-w-sm mx-auto shadow-sm flex flex-col gap-4 mt-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-amber-100/80 rounded-2xl">
-                  <FileText className="w-6 h-6 text-amber-600 animate-pulse" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-heading font-bold text-slate-900 text-base leading-tight">Save to Medical Records?</h4>
-                  <p className="text-[10px] font-bold text-amber-800 truncate mt-0.5">{selectedFileName}</p>
-                </div>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed">Would you like this document to be saved in your Medical Records for future reference and health tracking?</p>
-              {uploadingToStorage ? (
-                <div className="flex flex-col items-center justify-center py-2">
-                  <div className="w-6 h-6 border-2 border-amber-600 border-t-transparent rounded-full animate-spin mb-2" />
-                  <p className="text-[10px] font-bold text-slate-500">Uploading file and saving report...</p>
-                </div>
-              ) : (
-                <div className="flex gap-2 mt-2">
-                  <button onClick={handleSaveDocument} className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-sm">
-                    <FolderClosed className="w-3.5 h-3.5" /> Yes, Save It
-                  </button>
-                  <button onClick={handleJustAnalyze} className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-sm hover:bg-slate-50">
-                    <Search className="w-3.5 h-3.5" /> Just Analyze
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          )}
-
+                )}
+              </motion.div>
+            )}
+          </div>
           <div ref={messagesEndRef} />
         </div>
       )}
 
       {/* Fixed Bottom Input Dock — only when messages exist */}
       {!isEmpty && (
-        <div className="bg-white/95 backdrop-blur-sm border-t border-slate-200 p-4 shrink-0 shadow-[0_-8px_32px_rgba(0,0,0,0.04)] z-10">
-          <div className="max-w-4xl mx-auto">
+        <div className={isDesktop ? "fixed bottom-0 right-0 bg-white border-t border-slate-200 p-4 left-60 z-10 shadow-[0_-8px_32px_rgba(0,0,0,0.04)]" : "bg-white/95 backdrop-blur-sm border-t border-slate-200 p-4 shrink-0 shadow-[0_-8px_32px_rgba(0,0,0,0.04)] z-10"}>
+          <div className={isDesktop ? "max-w-3xl mx-auto w-full" : "max-w-4xl mx-auto"}>
             <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="image/png,image/jpeg,image/jpg,image/webp,application/pdf" />
 
             {selectedFile && (
